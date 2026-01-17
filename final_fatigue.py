@@ -5,7 +5,6 @@ import time
 import math
 import numpy as np
 from collections import deque
-
 import json
 
 #Clolour
@@ -78,7 +77,18 @@ while cap.isOpened():
             current_global_status, current_global_color = "WARNING", COLOR_WARN
         else: 
             current_global_status, current_global_color = "SYSTEM ACTIVE", COLOR_SAFE
-
+            
+        
+        data_packet = {
+            "eye_score": round(float(eye_val), 3),
+            "yawn_score": round(float(yawn_val), 3),
+            "tilt_val": round(float(tilt_val), 1),
+            "status": current_global_status,
+            "timestamp": time.time()
+        }
+        with open("live_data.json", "w") as f:
+            json.dump(data_packet, f)
+        
         cv2.rectangle(overlay, (20, 20), (550, 280), COLOR_BG, -1)
         cv2.addWeighted(overlay, 0.6, frame, 0.4, 0, frame)
 
