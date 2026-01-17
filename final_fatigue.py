@@ -5,6 +5,7 @@ import time
 import math
 import numpy as np
 from collections import deque
+import os 
 import json
 
 #Clolour
@@ -14,7 +15,8 @@ COLOR_SAFE = (180, 255, 150)  #薄荷绿
 COLOR_WARN = (80, 180, 255)   #琥珀金
 COLOR_DANGER = (100, 100, 255) #冷绯红
 
-model_path = 'face_landmarker.task'
+script_dir = os.path.dirname(os.path.abspath(__file__))
+model_path = os.path.join(script_dir, 'face_landmarker.task')
 BaseOptions = mp.tasks.BaseOptions
 FaceLandmarker = mp.tasks.vision.FaceLandmarker
 FaceLandmarkerOptions = mp.tasks.vision.FaceLandmarkerOptions
