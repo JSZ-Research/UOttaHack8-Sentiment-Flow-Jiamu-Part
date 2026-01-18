@@ -142,27 +142,57 @@ while cap.isOpened():
             json.dump(data_packet, f)
         
         # 轮廓
-        LEFT_EYE = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398]
-        RIGHT_EYE = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246]
-        LIPS = [61, 146, 91, 181, 84, 17, 314, 405, 324, 308, 415, 310, 311, 312, 13, 82, 81, 80, 191, 78]
+        horizontal_distract = max(shapes.get('eyeLookOutLeft', 0), 
+                                  shapes.get('eyeLookInLeft', 0),
+                                  shapes.get('eyeLookOutRight', 0),
+                                  shapes.get('eyeLookInRight', 0))
+        
+        vertical_look_up = shapes.get('eyeLookUpLeft', 0)
+        
+        raw_distract = max(horizontal_distract, vertical_look_up)
+        distracted_val = max(0, raw_distract - 0.2) * 1.5 
+        distracted_val = min(1.0, distracted_val)
 
-        def draw_part(indices, color, thickness=1):
-            points = []
-            for idx in indices:
-                pt = landmarks[idx]
-                points.append([int(pt.x * frame.shape[1]), int(pt.y * frame.shape[0])])
-            pts = np.array(points, np.int32)
-            cv2.polylines(frame, [pts], True, color, thickness, cv2.LINE_AA)
+        all_x = [pt.x for pt in landmarks]
+        all_y = [pt.y for pt in landmarks]
+        x_min, x_max = int(min(all_x) * frame.shape[1]), int(max(all_x) * frame.shape[1])
+        y_min, y_max = int(min(all_y) * frame.shape[0]), int(max(all_y) * frame.shape[0])
+        
+        # 主脸部框
+        cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), COLOR_SAFE, 20, cv2.LINE_AA)
+        
+        def draw_eye_box(indices, color):
+            ex_min = int(min([landmarks[i].x for i in indices]) * frame.shape[1])
+            ex_max = int(max([landmarks[i].x for i in indices]) * frame.shape[1])
+            ey_min = int(min([landmarks[i].y for i in indices]) * frame.shape[0])
+            ey_max = int(max([landmarks[i].y for i in indices]) * frame.shape[0])
+            cv2.rectangle(frame, (ex_min-5, ey_min-5), (ex_max+5, ey_max+5), color, 1, cv2.LINE_AA)
 
-        draw_part(LEFT_EYE, COLOR_SAFE, 1)
-        draw_part(RIGHT_EYE, COLOR_SAFE, 1)
-        draw_part(LIPS, (255, 255, 255), 1)
+        LEFT_EYE_INDICES = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398]
+        RIGHT_EYE_INDICES = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246]
+        
+        draw_eye_box(LEFT_EYE_INDICES, COLOR_TEXT_MAIN)
+        draw_eye_box(RIGHT_EYE_INDICES, COLOR_TEXT_MAIN)
 
+        # 3. 瞳孔定位
         if len(landmarks) > 473:
-            l_pupil = landmarks[468]
-            r_pupil = landmarks[473]
-            cv2.circle(frame, (int(l_pupil.x * frame.shape[1]), int(l_pupil.y * frame.shape[0])), 1, COLOR_SAFE, -1)
-            cv2.circle(frame, (int(r_pupil.x * frame.shape[1]), int(r_pupil.y * frame.shape[0])), 1, COLOR_SAFE, -1)
+            for pupil_idx in [468, 473]:
+                px, py = int(landmarks[pupil_idx].x * frame.shape[1]), int(landmarks[pupil_idx].y * frame.shape[0])
+                cv2.circle(frame, (px, py), 1, COLOR_SAFE, -1)
+
+        data_packet = {
+            "eye_score": round(float(eye_val), 3),
+            "yawn_score": round(float(yawn_val), 3),
+            "tilt_val": round(float(tilt_val), 1),
+            "smile_score": round(float(smile_val), 3),
+            "confused_score": round(float(confused_val), 3),
+            "distraction_score": round(float(distracted_val), 3),
+            "status": current_global_status,
+            "timestamp": time.time()
+        }
+        data_path = os.path.join(script_dir, "live_data.json")
+        with open(data_path, "w") as f:
+            json.dump(data_packet, f)
             # 以上是轮廓
 
         cv2.rectangle(overlay, (20, 20), (580, 380), COLOR_BG, -1)

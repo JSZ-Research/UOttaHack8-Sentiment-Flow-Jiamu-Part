@@ -34,8 +34,8 @@ def generate_and_submit_report(history_df, video_url):
     
     DATA REFERENCE SCALE (0.0 to 1.0):
     - Eye Openness: >0.70 is focused, <0.30 is drowsy.
-    - Smile Index: >0.15 is positive feedback.
-    - Confusion Index: >0.25 means cognitive load/puzzlement.
+    - Smile Index: >0.05 is positive feedback.
+    - Confusion Index: >0.10 means cognitive load/puzzlement.
     - Distraction: >0.30 means looking away from the screen.
     - Mouth/Yawn: >0.40 indicates high fatigue.
     - Stability: >90% is steady, <70% is significant head tilt/nodding.
