@@ -69,7 +69,10 @@ while cap.isOpened():
         
         confused_val = (shapes.get('browDownLeft', 0) + shapes.get('browDownRight', 0)) / 2
         
-        distracted_val = max(shapes.get('eyeLookOutLeft', 0), shapes.get('eyeLookInLeft', 0))
+        distracted_val = max(shapes.get('eyeLookOutLeft', 0), 
+                             shapes.get('eyeLookInLeft', 0),
+                             shapes.get('eyeLookOutRight', 0),
+                             shapes.get('eyeLookInRight', 0))
 
 
         e_col = COLOR_DANGER if eye_val > EYE_THRESH_DANGER else (COLOR_WARN if eye_val > EYE_THRESH_WARN else COLOR_SAFE)
@@ -104,6 +107,7 @@ while cap.isOpened():
             "tilt_val": round(float(tilt_val), 1),
             "smile_score": round(float(smile_val), 3),
             "confused_score": round(float(confused_val), 3),
+            "distraction_score": round(float(distracted_val), 3), # <--- 检查这一行键名
             "status": current_global_status,
             "timestamp": time.time()
         }
